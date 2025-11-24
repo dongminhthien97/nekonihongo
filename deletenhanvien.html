@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Xóa Nhân viên - Hệ thống Quản lý Nhân viên</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --danger: #ef4444;
+      --warning: #fb923c;
+      --bg: #0f0f1a;
+      --card: #1e1e2e;
+      --card-dark: #181824;
+      --border: #334155;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 2rem 0;
+    }
+
+    /* Header giống các trang trước */
+    header {
+      background: linear-gradient(to right, #16213e, #0f0f1a);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .logo i {
+      color: var(--primary);
+      font-size: 2rem;
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    .container {
+      max-width: 900px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+    }
+
+    /* Cảnh báo xóa */
+    .alert-warning {
+      background: rgba(251, 146, 60, 0.15);
+      border: 1px solid var(--warning);
+      color: var(--warning);
+      padding: 1.2rem 1.5rem;
+      border-radius: 16px;
+      text-align: center;
+      font-weight: 600;
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 12px;
+      font-size: 1.05rem;
+    }
+
+    .alert-warning i {
+      font-size: 1.4rem;
+    }
+
+    /* Card chính */
+    .delete-card {
+      background: var(--card);
+      border-radius: 20px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
+    }
+
+    .card-header {
+      background: var(--card-dark);
+      padding: 1.5rem 2rem;
+      border-bottom: 1px solid var(--border);
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .employee-info {
+      padding: 2rem;
+      text-align: center;
+    }
+
+    .employee-avatar {
+      width: 90px;
+      height: 90px;
+      border-radius: 50%;
+      overflow: hidden;
+      margin: 0 auto 1rem;
+      border: 4px solid var(--primary);
+      box-shadow: 0 8px 25px rgba(139, 92, 246, 0.3);
+    }
+
+    .employee-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .employee-name {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .employee-code {
+      color: var(--text-muted);
+      margin-bottom: 1rem;
+    }
+
+    .status-badge {
+      background: #22d3ee;
+      color: #164e63;
+      padding: 0.5rem 1.2rem;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: inline-block;
+    }
+
+    /* Thông tin chi tiết - 2 cột */
+    .info-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem 2rem;
+      padding: 2rem;
+      background: var(--card-dark);
+    }
+
+    .info-item {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .info-icon {
+      width: 44px;
+      height: 44px;
+      background: rgba(139, 92, 246, 0.2);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--primary);
+      font-size: 1.2rem;
+    }
+
+    .info-label {
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+
+    .info-value {
+      font-weight: 600;
+    }
+
+    /* Phần mật khẩu */
+    .password-section {
+      padding: 2rem;
+      border-top: 1px solid var(--border);
+    }
+
+    .password-section h3 {
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      font-size: 1.1rem;
+    }
+
+    .password-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1.5rem;
+    }
+
+    .password-input {
+      padding: 0.9rem 1rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: #2d2d44;
+      color: var(--text);
+      font-family: monospace;
+      letter-spacing: 4px;
+      font-size: 1.3rem;
+    }
+
+    /* Nút hành động */
+    .action-buttons {
+      padding: 2rem;
+      display: flex;
+      justify-content: center;
+      gap: 1.5rem;
+      background: var(--card-dark);
+      border-top: 1px solid var(--border);
+    }
+
+    .btn {
+      padding: 0.9rem 2.5rem;
+      border: none;
+      border-radius: 50px;
+      font-weight: 600;
+      font-size: 1rem;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      transition: all 0.3s;
+    }
+
+    .btn-cancel {
+      background: #334155;
+      color: white;
+    }
+
+    .btn-cancel:hover {
+      background: #475569;
+    }
+
+    .btn-delete {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-delete:hover {
+      background: #dc2626;
+      transform: translateY(-3px);
+      box-shadow: 0 10px 25px rgba(239, 68, 68, 0.4);
+    }
+
+    footer {
+      text-align: center;
+      padding: 3rem 1rem 1rem;
+      color: var(--text-muted);
+      margin-top: 5rem;
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+      margin: 0 10px;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <i class="fas fa-users-cog"></i>
+      <div>
+        Hệ thống Quản lý Nhân viên
+        <div style="font-size:0.9rem; color:#94a3b8;">Quản lý thông tin nhân sự</div>
+      </div>
+    </div>
+    <a href="#" style="color:var(--text-muted);"><i class="fas fa-home"></i> Trang chủ</a>
+  </header>
+
+  <div class="container">
+
+    <!-- Cảnh báo -->
+    <div class="alert-warning">
+      <i class="fas fa-exclamation-triangle"></i>
+      <div>
+        <strong>Cảnh báo: Xóa Nhân viên</strong><br>
+        Bạn sắp xóa thông tin nhân viên này. Hành động này <strong>không thể hoàn tác</strong>. Vui lòng xác nhận để
+        tiếp tục.
+      </div>
+    </div>
+
+    <!-- Card xóa nhân viên -->
+    <div class="delete-card">
+
+      <div class="card-header">
+        Thông tin Nhân viên • Mã nhân viên: NV005
+      </div>
+
+      <div class="employee-info">
+        <div class="employee-avatar">
+          <img src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=400" alt="Hoàng Hoài Lam">
+        </div>
+        <h2 class="employee-name">Hoàng Hoài Lam</h2>
+        <p class="employee-code">Mã nhân viên: NV005</p>
+        <span class="status-badge">
+          <i class="fas fa-exclamation-circle"></i> Sẽ bị xóa
+        </span>
+      </div>
+
+      <div class="info-grid">
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-user"></i></div>
+          <div>
+            <div class="info-label">HỌ TÊN</div>
+            <div class="info-value">Hoàng Hoài Lam</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-id-card"></i></div>
+          <div>
+            <div class="info-label">SỐ CMND</div>
+            <div class="info-value">079194000888</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-phone"></i></div>
+          <div>
+            <div class="info-label">SỐ ĐIỆN THOẠI</div>
+            <div class="info-value">0909112233</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-calendar"></i></div>
+          <div>
+            <div class="info-label">NGÀY SINH</div>
+            <div class="info-value">20/11/1994</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-user-tag"></i></div>
+          <div>
+            <div class="info-label">TÀI KHOẢN</div>
+            <div class="info-value">hoailam.dev</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-envelope"></i></div>
+          <div>
+            <div class="info-label">EMAIL</div>
+            <div class="info-value">lam.hoang@company.com</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-map-marker-alt"></i></div>
+          <div>
+            <div class="info-label">ĐỊA CHỈ</div>
+            <div class="info-value">22B Đường Nguyễn Văn Cừ, Quận 5, Tp. Hồ Chí Minh</div>
+          </div>
+        </div>
+        <div class="info-item">
+          <div class="info-icon"><i class="fas fa-venus-mars"></i></div>
+          <div>
+            <div class="info-label">GIỚI TÍNH</div>
+            <div class="info-value">Nữ</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Nút hành động -->
+      <div class="action-buttons">
+        <button class="btn btn-cancel">
+          <i class="fas fa-times"></i> Hủy bỏ
+        </button>
+        <button class="btn btn-delete">
+          <i class="fas fa-trash-alt"></i> Xác nhận xóa
+        </button>
+      </div>
+    </div>
+
+  </div>
+
+  <footer>
+    © 2025 Hệ thống Quản lý Nhân viên. Tất cả quyền được bảo lưu.<br>
+    <a href="#">Hỗ trợ</a> • <a href="#">Điều khoản</a> • <a href="#">Bảo mật</a>
+  </footer>
+
+</body>
+
+</html>

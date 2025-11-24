@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Hệ thống Quản lý Nhân viên</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <style>
+    :root {
+      --primary: #8b5cf6;
+      --primary-dark: #7c4dff;
+      --bg: #0f0f1a;
+      --card: #1a1a2e;
+      --text: #e2e8f0;
+      --text-muted: #94a3b8;
+      --border: #334155;
+      --success: #5eead4;
+      --danger: #fb923c;
+      --hover: rgba(139, 92, 246, 0.15);
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+    }
+
+    /* Header */
+    header {
+      background: linear-gradient(to right, #16213e, #0f0f1a);
+      padding: 1rem 2rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .logo i {
+      color: var(--primary);
+      font-size: 2rem;
+    }
+
+    .logo span {
+      color: var(--primary);
+    }
+
+    /* Main Container */
+    .container {
+      max-width: 1400px;
+      margin: 2rem auto;
+      padding: 0 2rem;
+    }
+
+    h1 {
+      font-size: 2.2rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    /* Search & Actions */
+    .actions {
+      display: flex;
+      gap: 1rem;
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 300px;
+      position: relative;
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 0.9rem 1rem 0.9rem 3rem;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      background: var(--card);
+      color: var(--text);
+      font-size: 1rem;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 1rem;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .btn {
+      padding: 0.9rem 1.5rem;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-search {
+      background: var(--border);
+      color: var(--text);
+    }
+
+    .btn-add {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-add:hover {
+      background: var(--primary-dark);
+      transform: translateY(-2px);
+    }
+
+    /* Table */
+    .table-container {
+      background: var(--card);
+      border-radius: 16px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    thead {
+      background: var(--success);
+      color: #0f172a;
+      font-weight: 600;
+    }
+
+    th,
+    td {
+      padding: 1rem 1.2rem;
+      text-align: left;
+    }
+
+    th:last-child,
+    td:last-child {
+      text-align: center;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border);
+      transition: background 0.2s;
+    }
+
+    tbody tr:hover {
+      background: var(--hover);
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    /* Action buttons */
+    .actions-cell {
+      display: flex;
+      gap: 8px;
+      justify-content: center;
+    }
+
+    .btn-sm {
+      padding: 0.5rem 1rem;
+      border: none;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .btn-edit {
+      background: #475569;
+      color: white;
+    }
+
+    .btn-delete {
+      background: var(--danger);
+      color: white;
+    }
+
+    .btn-edit:hover {
+      background: #64748b;
+    }
+
+    .btn-delete:hover {
+      background: #fb923c;
+      transform: translateY(-1px);
+    }
+
+    /* Footer */
+    footer {
+      text-align: center;
+      padding: 2rem;
+      color: var(--text-muted);
+      margin-top: 4rem;
+      border-top: 1px solid var(--border);
+    }
+
+    footer a {
+      color: var(--primary);
+      text-decoration: none;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <div class="logo">
+      <i class="fas fa-users-cog"></i>
+      <div>
+        Hệ thống Quản lý Nhân viên
+        <div style="font-size:0.9rem; color:#94a3b8;">Quản lý thông tin nhân sự</div>
+      </div>
+    </div>
+    <a href="#" style="color:var(--text-muted);"><i class="fas fa-home"></i> Trang chủ</a>
+  </header>
+
+  <div class="container">
+    <h1>Danh sách Nhân viên</h1>
+    <p class="subtitle">Quản lý và xem thông tin chi tiết của tất cả nhân viên trong hệ thống</p>
+
+    <div class="actions">
+      <div class="search-box">
+        <i class="fas fa-search"></i>
+        <input type="text" placeholder="Tìm kiếm theo mã, tên, email, số điện thoại..." />
+      </div>
+      <button class="btn btn-search"><i class="fas fa-search"></i> Tìm kiếm</button>
+      <button class="btn btn-add"><i class="fas fa-plus"></i> Thêm nhân viên</button>
+    </div>
+
+    <div class="table-container">
+      <table>
+        <thead>
+          <tr>
+            <th>Mã nhân viên</th>
+            <th>Tên nhân viên</th>
+            <th>Số CMND</th>
+            <th>Email</th>
+            <th>Số điện thoại</th>
+            <th>Địa chỉ</th>
+            <th>Hành động</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>NV001</td>
+            <td>Nguyễn Văn An</td>
+            <td>001199000123</td>
+            <td>an.nguyen@company.com</td>
+            <td>0901234567</td>
+            <td>789 Đường Lê Lợi, Quận 1, Tp. Hồ Chí Minh</td>
+            <td class="actions-cell">
+              <button class="btn-sm btn-edit"><i class="fas fa-edit"></i> Sửa</button>
+              <button class="btn-sm btn-delete"><i class="fas fa-trash"></i> Xóa</button>
+            </td>
+          </tr>
+          <tr>
+            <td>NV002</td>
+            <td>Trần Thị Bích</td>
+            <td>079200000456</td>
+            <td>bich.tran@company.com</td>
+            <td>0987654321</td>
+            <td>101 Phố Hàng Bài, Quận Hoàn Kiếm, Hà Nội</td>
+            <td class="actions-cell">
+              <button class="btn-sm btn-edit"><i class="fas fa-edit"></i> Sửa</button>
+              <button class="btn-sm btn-delete"><i class="fas fa-trash"></i> Xóa</button>
+            </td>
+          </tr>
+          <tr>
+            <td>NV003</td>
+            <td>Lê Minh Cường</td>
+            <td>034195000789</td>
+            <td>cuong.le@company.com</td>
+            <td>0356789123</td>
+            <td>321 Đại lộ Bình Dương, Thủ Dầu Một, Bình Dương</td>
+            <td class="actions-cell">
+              <button class="btn-sm btn-edit"><i class="fas fa-edit"></i> Sửa</button>
+              <button class="btn-sm btn-delete"><i class="fas fa-trash"></i> Xóa</button>
+            </td>
+          </tr>
+          <tr>
+            <td>NV004</td>
+            <td>Phạm Thu Dung</td>
+            <td>045198000555</td>
+            <td>dung.pham@company.com</td>
+            <td>0912334455</td>
+            <td>Ngõ 15, Đường Nguyễn Trãi, Thanh Xuân, Hà Nội</td>
+            <td class="actions-cell">
+              <button class="btn-sm btn-edit"><i class="fas fa-edit"></i> Sửa</button>
+              <button class="btn-sm btn-delete"><i class="fas fa-trash"></i> Xóa</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <footer>
+    © 2025 Hệ thống Quản lý Nhân viên. Tất cả quyền được bảo lưu.<br>
+    <a href="#">Hỗ trợ</a> • <a href="#">Điều khoản</a> • <a href="#">Bảo mật</a>
+  </footer>
+
+</body>
+
+</html>

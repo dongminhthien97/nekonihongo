@@ -1,0 +1,790 @@
+<!doctype html>
+<html lang="vi">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Employee Management Dashboard</title>
+  <script src="/_sdk/element_sdk.js"></script>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: #f0f4f8;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    html {
+      height: 100%;
+    }
+
+    .main-container {
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+    }
+
+    .content-wrapper {
+      display: flex;
+      flex: 1;
+      overflow: hidden;
+    }
+
+    .content-area {
+      flex: 1;
+      overflow-y: auto;
+      padding: 24px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
+    }
+
+    .card {
+      background: white;
+      border-radius: 16px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+      transition: all 0.3s ease;
+    }
+
+    .sidebar-item {
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .sidebar-item:hover {
+      transform: translateX(4px);
+    }
+
+    .sidebar-item.active {
+      font-weight: 600;
+    }
+
+    .btn-primary {
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-secondary {
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      transform: translateY(-1px);
+    }
+
+    .input-field {
+      transition: all 0.2s ease;
+    }
+
+    .input-field:focus {
+      box-shadow: 0 0 0 3px rgba(129, 140, 248, 0.1);
+    }
+
+    .table-row {
+      transition: all 0.2s ease;
+    }
+
+    .table-row:hover {
+      background: #f8fafc;
+    }
+
+    .avatar-preview {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .upload-area {
+      border: 2px dashed #cbd5e1;
+      border-radius: 12px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .upload-area:hover {
+      border-color: #818cf8;
+      background: #f8fafc;
+    }
+
+    .info-box {
+      background: #fef3c7;
+      border-left: 4px solid #f59e0b;
+      border-radius: 8px;
+      padding: 16px;
+    }
+
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+
+    .modal-overlay.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: white;
+      border-radius: 20px;
+      max-width: 600px;
+      width: 90%;
+      max-height: 90%;
+      overflow-y: auto;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .delete-warning {
+      background: #fee2e2;
+      border: 2px solid #ef4444;
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 20px;
+    }
+
+    .navbar-search {
+      max-width: 300px;
+    }
+
+    .user-avatar {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+    }
+
+    .notification-icon {
+      position: relative;
+      cursor: pointer;
+    }
+
+    .notification-badge {
+      position: absolute;
+      top: -4px;
+      right: -4px;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #ef4444;
+      color: white;
+      font-size: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 600;
+    }
+  </style>
+  <style>
+    @view-transition {
+      navigation: auto;
+    }
+  </style>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+</head>
+
+<body>
+  <div class="main-container"><!-- Navbar -->
+    <nav id="navbar" class="px-6 py-4 flex items-center justify-between shadow-md">
+      <div class="flex items-center gap-4">
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-2xl shadow-md">
+          🏢
+        </div>
+        <div>
+          <h1 id="system-name" class="font-bold text-lg leading-tight"></h1>
+          <p id="company-name" class="text-xs opacity-75"></p>
+        </div>
+      </div>
+      <div class="flex items-center gap-4">
+        <div class="navbar-search hidden md:block"><input type="text" placeholder="Tìm kiếm..."
+            class="w-full px-4 py-2 rounded-lg border border-gray-300 focus:outline-none focus:border-indigo-400 text-sm">
+        </div>
+        <div class="notification-icon"><span class="text-2xl">🔔</span>
+          <div class="notification-badge">
+            3
+          </div>
+        </div>
+        <div class="user-avatar">
+          AD
+        </div>
+      </div>
+    </nav>
+    <div class="content-wrapper"><!-- Sidebar -->
+      <aside id="sidebar" class="w-64 shadow-lg p-6">
+        <nav class="space-y-2">
+          <div class="sidebar-item active px-4 py-3 rounded-lg flex items-center gap-3"><span class="text-xl">📊</span>
+            <span>Dashboard</span>
+          </div>
+          <div class="sidebar-item px-4 py-3 rounded-lg flex items-center gap-3"><span class="text-xl">👥</span>
+            <span>Nhân viên</span>
+          </div>
+          <div class="sidebar-item px-4 py-3 rounded-lg flex items-center gap-3"><span class="text-xl">🏛️</span>
+            <span>Phòng ban</span>
+          </div>
+          <div class="sidebar-item px-4 py-3 rounded-lg flex items-center gap-3"><span class="text-xl">👔</span>
+            <span>Chức vụ</span>
+          </div>
+          <div class="sidebar-item px-4 py-3 rounded-lg flex items-center gap-3"><span class="text-xl">⚙️</span>
+            <span>Hệ thống</span>
+          </div>
+          <div class="sidebar-item px-4 py-3 rounded-lg flex items-center gap-3"><span class="text-xl">🔧</span>
+            <span>Cài đặt</span>
+          </div>
+        </nav>
+      </aside><!-- Content Area -->
+      <main class="content-area"><!-- Screen 1: Danh sách nhân viên -->
+        <div id="screen-list" class="screen active">
+          <div class="card p-6">
+            <h2 id="list-title" class="text-2xl font-bold mb-6"></h2><!-- Toolbar -->
+            <div class="flex gap-3 mb-6 flex-wrap items-center">
+              <div class="flex-1 min-w-[250px]"><input type="text" id="search-input"
+                  placeholder="Tìm kiếm theo tên, email, CMND..." maxlength="28"
+                  class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+              </div><button id="search-btn"
+                class="btn-secondary px-6 py-2.5 rounded-lg font-semibold border-2 hover:shadow-md"> <span
+                  class="mr-2">🔍</span> <span id="search-button-text"></span> </button> <button id="add-new-btn"
+                class="btn-primary px-6 py-2.5 rounded-lg font-semibold text-white shadow-md"> <span
+                  class="mr-2">➕</span> <span id="add-button-text"></span> </button>
+            </div><!-- Info Box -->
+            <div class="info-box mb-6">
+              <h3 class="font-bold mb-2">📋 Hướng dẫn sử dụng:</h3>
+              <ul class="space-y-1 text-sm">
+                <li><strong>Thêm:</strong> Click button "Thêm nhân viên" để thêm mới một nhân viên</li>
+                <li><strong>Sửa:</strong> Click button "Sửa nhân viên" để sửa thông tin</li>
+                <li><strong>Xóa:</strong> Click button "Xóa nhân viên" để xóa thông tin</li>
+                <li><strong>Tìm kiếm:</strong> Nhập từ khóa và click Tìm kiếm</li>
+              </ul>
+            </div><!-- Table -->
+            <div class="overflow-x-auto rounded-lg border border-gray-200">
+              <table class="w-full">
+                <thead id="table-header">
+                  <tr class="text-left border-b-2">
+                    <th class="px-4 py-3 font-semibold">Mã nhân viên</th>
+                    <th class="px-4 py-3 font-semibold">Tên nhân viên</th>
+                    <th class="px-4 py-3 font-semibold">Số CMND</th>
+                    <th class="px-4 py-3 font-semibold">Email</th>
+                    <th class="px-4 py-3 font-semibold">Số điện thoại</th>
+                    <th class="px-4 py-3 font-semibold">Địa chỉ</th>
+                    <th class="px-4 py-3 font-semibold text-center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="employee-table"><!-- Sample Data -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div><!-- Screen 2: Thêm nhân viên -->
+        <div id="screen-add" class="screen">
+          <div class="card p-6">
+            <h2 id="add-title" class="text-2xl font-bold mb-6"></h2>
+            <form id="add-form" class="space-y-5"><!-- Upload Image -->
+              <div class="text-center">
+                <div class="upload-area inline-block p-6"><img id="add-preview"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e0e7ff'/%3E%3Ctext x='50' y='65' font-size='40' text-anchor='middle' fill='%23818cf8'%3E👤%3C/text%3E%3C/svg%3E"
+                    alt="Avatar" class="avatar-preview mx-auto mb-3"> <button type="button"
+                    class="btn-secondary px-5 py-2 rounded-lg border-2 font-medium text-sm"> 📤 Tải ảnh lên </button>
+                  <p class="text-xs text-gray-500 mt-2">Hình ảnh (JPG, PNG)</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label class="block font-semibold mb-2 text-sm">Tài khoản <span
+                      class="text-red-500">*</span></label> <input type="text" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="Nhập tài khoản">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Họ tên <span class="text-red-500">*</span></label>
+                  <input type="text" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="Nhập họ tên">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Mật khẩu <span
+                      class="text-red-500">*</span></label> <input type="password" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="Nhập mật khẩu">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Nhập lại mật khẩu <span
+                      class="text-red-500">*</span></label> <input type="password" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="Nhập lại mật khẩu">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">CMND <span class="text-red-500">*</span></label>
+                  <input type="text" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="Nhập số CMND">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Email <span class="text-red-500">*</span></label>
+                  <input type="email" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="email@example.com">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Số điện thoại <span
+                      class="text-red-500">*</span></label> <input type="tel" maxlength="28"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                    placeholder="0901234567">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Ngày sinh <span
+                      class="text-red-500">*</span></label> <input type="date"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+              </div>
+              <div><label class="block font-semibold mb-2 text-sm">Địa chỉ</label> <input type="text" maxlength="28"
+                  class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none"
+                  placeholder="Nhập địa chỉ">
+              </div>
+              <div><label class="block font-semibold mb-2 text-sm">Giới tính</label>
+                <div class="flex gap-6"><label class="flex items-center gap-2 cursor-pointer"> <input type="checkbox"
+                      class="w-4 h-4 rounded border-2"> <span class="font-medium">Nam</span> </label> <label
+                    class="flex items-center gap-2 cursor-pointer"> <input type="checkbox"
+                      class="w-4 h-4 rounded border-2"> <span class="font-medium">Nữ</span> </label>
+                </div>
+              </div>
+              <div class="flex gap-3 pt-4"><button type="submit"
+                  class="btn-primary flex-1 py-3 rounded-lg font-bold text-white shadow-md"> <span
+                    id="save-button-text"></span> </button> <button type="button" id="back-from-add"
+                  class="btn-secondary flex-1 py-3 rounded-lg font-bold border-2"> <span
+                    id="back-button-text-add"></span> </button>
+              </div>
+            </form>
+          </div>
+        </div><!-- Screen 3: Sửa nhân viên -->
+        <div id="screen-edit" class="screen">
+          <div class="card p-6">
+            <h2 id="edit-title" class="text-2xl font-bold mb-6"></h2>
+            <form id="edit-form" class="space-y-5"><!-- Upload Image -->
+              <div class="text-center">
+                <div class="upload-area inline-block p-6"><img id="edit-preview"
+                    src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23e0e7ff'/%3E%3Ctext x='50' y='65' font-size='40' text-anchor='middle' fill='%23818cf8'%3E👤%3C/text%3E%3C/svg%3E"
+                    alt="Avatar" class="avatar-preview mx-auto mb-3"> <button type="button"
+                    class="btn-secondary px-5 py-2 rounded-lg border-2 font-medium text-sm"> 📤 Thay đổi ảnh </button>
+                  <p class="text-xs text-gray-500 mt-2">Hình ảnh (JPG, PNG)</p>
+                </div>
+              </div>
+              <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div><label class="block font-semibold mb-2 text-sm">Tài khoản <span
+                      class="text-red-500">*</span></label> <input type="text" maxlength="28" value="nguyenvana"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Họ tên <span class="text-red-500">*</span></label>
+                  <input type="text" maxlength="28" value="Nguyễn Văn An"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Mật khẩu</label> <input type="password"
+                    maxlength="28" placeholder="Để trống nếu không đổi"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Nhập lại mật khẩu</label> <input type="password"
+                    maxlength="28" placeholder="Để trống nếu không đổi"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">CMND <span class="text-red-500">*</span></label>
+                  <input type="text" maxlength="28" value="001234567890"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Email <span class="text-red-500">*</span></label>
+                  <input type="email" maxlength="28" value="an.nguyen@company.com"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Số điện thoại <span
+                      class="text-red-500">*</span></label> <input type="tel" maxlength="28" value="0901234567"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+                <div><label class="block font-semibold mb-2 text-sm">Ngày sinh <span
+                      class="text-red-500">*</span></label> <input type="date" value="1990-05-15"
+                    class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+                </div>
+              </div>
+              <div><label class="block font-semibold mb-2 text-sm">Địa chỉ</label> <input type="text" maxlength="28"
+                  value="123 Đường ABC, Quận 1"
+                  class="input-field w-full px-4 py-2.5 rounded-lg border-2 border-gray-200 focus:border-indigo-400 focus:outline-none">
+              </div>
+              <div><label class="block font-semibold mb-2 text-sm">Giới tính</label>
+                <div class="flex gap-6"><label class="flex items-center gap-2 cursor-pointer"> <input type="checkbox"
+                      checked class="w-4 h-4 rounded border-2"> <span class="font-medium">Nam</span> </label> <label
+                    class="flex items-center gap-2 cursor-pointer"> <input type="checkbox"
+                      class="w-4 h-4 rounded border-2"> <span class="font-medium">Nữ</span> </label>
+                </div>
+              </div>
+              <div class="flex gap-3 pt-4"><button type="submit"
+                  class="btn-primary flex-1 py-3 rounded-lg font-bold text-white shadow-md"> <span
+                    id="update-button-text"></span> </button> <button type="button" id="back-from-edit"
+                  class="btn-secondary flex-1 py-3 rounded-lg font-bold border-2"> <span
+                    id="back-button-text-edit"></span> </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div><!-- Modal for Delete -->
+  <div id="delete-modal" class="modal-overlay">
+    <div class="modal-content p-6">
+      <h2 id="delete-title" class="text-2xl font-bold mb-4 text-red-600"></h2>
+      <div class="delete-warning">
+        <div class="flex items-center gap-3"><span class="text-3xl">⚠️</span>
+          <div>
+            <h3 class="text-lg font-bold text-red-600">Cảnh báo!</h3>
+            <p class="text-red-700 text-sm">Bạn có chắc chắn muốn xóa nhân viên này? Hành động này không thể hoàn tác.
+            </p>
+          </div>
+        </div>
+      </div>
+      <div class="space-y-4"><!-- Display Image -->
+        <div class="text-center"><img
+            src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='100' height='100' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23fee2e2'/%3E%3Ctext x='50' y='65' font-size='40' text-anchor='middle' fill='%23ef4444'%3E👤%3C/text%3E%3C/svg%3E"
+            alt="Avatar" class="avatar-preview mx-auto">
+        </div>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div class="bg-gray-50 p-3 rounded-lg"><label class="block font-semibold mb-1 text-gray-600 text-sm">Tài
+              khoản</label>
+            <p class="font-medium">nguyenvana</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label class="block font-semibold mb-1 text-gray-600 text-sm">Họ
+              tên</label>
+            <p class="font-medium">Nguyễn Văn An</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label
+              class="block font-semibold mb-1 text-gray-600 text-sm">CMND</label>
+            <p class="font-medium">001234567890</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label
+              class="block font-semibold mb-1 text-gray-600 text-sm">Email</label>
+            <p class="font-medium">an.nguyen@company.com</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label class="block font-semibold mb-1 text-gray-600 text-sm">Số điện
+              thoại</label>
+            <p class="font-medium">0901234567</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label class="block font-semibold mb-1 text-gray-600 text-sm">Ngày
+              sinh</label>
+            <p class="font-medium">15/05/1990</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label class="block font-semibold mb-1 text-gray-600 text-sm">Giới
+              tính</label>
+            <p class="font-medium">Nam</p>
+          </div>
+          <div class="bg-gray-50 p-3 rounded-lg"><label class="block font-semibold mb-1 text-gray-600 text-sm">Địa
+              chỉ</label>
+            <p class="font-medium">123 Đường ABC</p>
+          </div>
+        </div>
+        <div class="flex gap-3 pt-4"><button id="confirm-delete-btn"
+            class="flex-1 py-3 rounded-lg font-bold text-white shadow-lg bg-red-500 hover:bg-red-600 transition-all">
+            <span class="mr-2">🗑️</span> <span id="delete-button-text"></span> </button> <button id="cancel-delete-btn"
+            class="btn-secondary flex-1 py-3 rounded-lg font-bold border-2"> <span id="back-button-text-delete"></span>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  <script>
+    const defaultConfig = {
+      navbar_color: "#a7c7e7",
+      sidebar_color: "#e3f2fd",
+      surface_color: "#ffffff",
+      text_color: "#1e293b",
+      primary_action_color: "#5b9bd5",
+      font_family: "Inter",
+      font_size: 14,
+      system_name: "Quản lý nhân viên",
+      company_name: "CÔNG TY ABC",
+      list_title: "Danh sách nhân viên",
+      add_title: "Thêm nhân viên mới",
+      edit_title: "Chỉnh sửa thông tin nhân viên",
+      delete_title: "Xác nhận xóa nhân viên",
+      add_button: "Thêm nhân viên",
+      search_button: "Tìm kiếm",
+      save_button: "Thêm mới",
+      update_button: "Cập nhật",
+      delete_button: "Xóa",
+      back_button: "Quay lại"
+    };
+
+    const sampleEmployees = [
+      { id: "EMP001", name: "Nguyễn Văn An", cmnd: "001234567890", email: "an.nguyen@company.com", phone: "0901234567", address: "123 Đường ABC, Quận 1, TP.HCM" },
+      { id: "EMP002", name: "Trần Thị Bình", cmnd: "001234567891", email: "binh.tran@company.com", phone: "0901234568", address: "456 Đường XYZ, Quận 3, TP.HCM" },
+      { id: "EMP003", name: "Lê Hoàng Cường", cmnd: "001234567892", email: "cuong.le@company.com", phone: "0901234569", address: "789 Đường DEF, Quận 5, TP.HCM" },
+      { id: "EMP004", name: "Phạm Thị Dung", cmnd: "001234567893", email: "dung.pham@company.com", phone: "0901234570", address: "321 Đường GHI, Quận 7, TP.HCM" },
+      { id: "EMP005", name: "Hoàng Văn Em", cmnd: "001234567894", email: "em.hoang@company.com", phone: "0901234571", address: "654 Đường JKL, Quận 10, TP.HCM" }
+    ];
+
+    function renderEmployeeTable() {
+      const tbody = document.getElementById('employee-table');
+      tbody.innerHTML = sampleEmployees.map(emp => `
+                <tr class="table-row border-b">
+                    <td class="px-4 py-3 font-medium text-sm">${emp.id}</td>
+                    <td class="px-4 py-3 font-semibold text-sm">${emp.name}</td>
+                    <td class="px-4 py-3 text-sm">${emp.cmnd}</td>
+                    <td class="px-4 py-3 text-sm">${emp.email}</td>
+                    <td class="px-4 py-3 text-sm">${emp.phone}</td>
+                    <td class="px-4 py-3 text-sm">${emp.address}</td>
+                    <td class="px-4 py-3 text-center">
+                        <button class="edit-btn px-3 py-1.5 rounded-lg font-medium mr-2 text-sm hover:shadow-md transition-all" data-id="${emp.id}">
+                            ✏️ Sửa
+                        </button>
+                        <button class="delete-btn px-3 py-1.5 rounded-lg font-medium bg-red-100 text-red-600 text-sm hover:bg-red-200 transition-all" data-id="${emp.id}">
+                            🗑️ Xóa
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.addEventListener('click', () => showScreen('screen-edit'));
+      });
+
+      document.querySelectorAll('.delete-btn').forEach(btn => {
+        btn.addEventListener('click', () => showDeleteModal());
+      });
+    }
+
+    function showScreen(screenId) {
+      document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+      });
+      document.getElementById(screenId).classList.add('active');
+      document.querySelector('.content-area').scrollTo(0, 0);
+    }
+
+    function showDeleteModal() {
+      document.getElementById('delete-modal').classList.add('active');
+    }
+
+    function hideDeleteModal() {
+      document.getElementById('delete-modal').classList.remove('active');
+    }
+
+    function showToast(message, type = 'success') {
+      const toast = document.createElement('div');
+      toast.className = `fixed top-20 right-8 px-6 py-3 rounded-xl shadow-2xl text-white font-semibold z-50 ${type === 'success' ? 'bg-green-500' : 'bg-blue-500'}`;
+      toast.textContent = message;
+      document.body.appendChild(toast);
+      setTimeout(() => toast.remove(), 3000);
+    }
+
+    async function onConfigChange(config) {
+      const customFont = config.font_family || defaultConfig.font_family;
+      const baseFontStack = 'Segoe UI, Tahoma, Geneva, Verdana, sans-serif';
+      const baseSize = config.font_size || defaultConfig.font_size;
+
+      const navbarColor = config.navbar_color || defaultConfig.navbar_color;
+      const sidebarColor = config.sidebar_color || defaultConfig.sidebar_color;
+      const surfaceColor = config.surface_color || defaultConfig.surface_color;
+      const textColor = config.text_color || defaultConfig.text_color;
+      const primaryColor = config.primary_action_color || defaultConfig.primary_action_color;
+
+      document.body.style.fontFamily = `${customFont}, ${baseFontStack}`;
+      document.body.style.fontSize = `${baseSize}px`;
+      document.body.style.color = textColor;
+
+      document.getElementById('navbar').style.backgroundColor = navbarColor;
+      document.getElementById('navbar').style.color = textColor;
+
+      document.getElementById('sidebar').style.backgroundColor = sidebarColor;
+      document.getElementById('sidebar').style.color = textColor;
+
+      document.querySelectorAll('.sidebar-item.active').forEach(item => {
+        item.style.backgroundColor = primaryColor;
+        item.style.color = '#ffffff';
+      });
+
+      document.querySelectorAll('.card').forEach(card => {
+        card.style.backgroundColor = surfaceColor;
+        card.style.color = textColor;
+      });
+
+      document.getElementById('system-name').textContent = config.system_name || defaultConfig.system_name;
+      document.getElementById('system-name').style.fontSize = `${baseSize * 1.14}px`;
+
+      document.getElementById('company-name').textContent = config.company_name || defaultConfig.company_name;
+      document.getElementById('company-name').style.fontSize = `${baseSize * 0.86}px`;
+
+      document.getElementById('list-title').textContent = config.list_title || defaultConfig.list_title;
+      document.getElementById('list-title').style.fontSize = `${baseSize * 1.71}px`;
+
+      document.getElementById('add-title').textContent = config.add_title || defaultConfig.add_title;
+      document.getElementById('add-title').style.fontSize = `${baseSize * 1.71}px`;
+
+      document.getElementById('edit-title').textContent = config.edit_title || defaultConfig.edit_title;
+      document.getElementById('edit-title').style.fontSize = `${baseSize * 1.71}px`;
+
+      document.getElementById('delete-title').textContent = config.delete_title || defaultConfig.delete_title;
+      document.getElementById('delete-title').style.fontSize = `${baseSize * 1.71}px`;
+
+      document.getElementById('add-button-text').textContent = config.add_button || defaultConfig.add_button;
+      document.getElementById('search-button-text').textContent = config.search_button || defaultConfig.search_button;
+      document.getElementById('save-button-text').textContent = config.save_button || defaultConfig.save_button;
+      document.getElementById('update-button-text').textContent = config.update_button || defaultConfig.update_button;
+      document.getElementById('delete-button-text').textContent = config.delete_button || defaultConfig.delete_button;
+      document.getElementById('back-button-text-add').textContent = config.back_button || defaultConfig.back_button;
+      document.getElementById('back-button-text-edit').textContent = config.back_button || defaultConfig.back_button;
+      document.getElementById('back-button-text-delete').textContent = config.back_button || defaultConfig.back_button;
+
+      const primaryButtons = [
+        document.getElementById('add-new-btn'),
+        ...document.querySelectorAll('#add-form button[type="submit"], #edit-form button[type="submit"]')
+      ];
+
+      primaryButtons.forEach(btn => {
+        if (btn) {
+          btn.style.backgroundColor = primaryColor;
+          btn.style.color = '#ffffff';
+        }
+      });
+
+      document.getElementById('table-header').style.backgroundColor = sidebarColor;
+      document.getElementById('table-header').style.color = textColor;
+
+      document.querySelectorAll('.edit-btn').forEach(btn => {
+        btn.style.backgroundColor = sidebarColor;
+        btn.style.color = textColor;
+      });
+
+      document.querySelectorAll('.btn-secondary').forEach(btn => {
+        btn.style.borderColor = primaryColor;
+        btn.style.color = textColor;
+      });
+
+      document.querySelector('.modal-content').style.backgroundColor = surfaceColor;
+      document.querySelector('.modal-content').style.color = textColor;
+    }
+
+    if (window.elementSdk) {
+      window.elementSdk.init({
+        defaultConfig: defaultConfig,
+        onConfigChange: onConfigChange,
+        mapToCapabilities: (config) => ({
+          recolorables: [
+            {
+              get: () => config.navbar_color || defaultConfig.navbar_color,
+              set: (value) => {
+                config.navbar_color = value;
+                window.elementSdk.setConfig({ navbar_color: value });
+              }
+            },
+            {
+              get: () => config.sidebar_color || defaultConfig.sidebar_color,
+              set: (value) => {
+                config.sidebar_color = value;
+                window.elementSdk.setConfig({ sidebar_color: value });
+              }
+            },
+            {
+              get: () => config.surface_color || defaultConfig.surface_color,
+              set: (value) => {
+                config.surface_color = value;
+                window.elementSdk.setConfig({ surface_color: value });
+              }
+            },
+            {
+              get: () => config.text_color || defaultConfig.text_color,
+              set: (value) => {
+                config.text_color = value;
+                window.elementSdk.setConfig({ text_color: value });
+              }
+            },
+            {
+              get: () => config.primary_action_color || defaultConfig.primary_action_color,
+              set: (value) => {
+                config.primary_action_color = value;
+                window.elementSdk.setConfig({ primary_action_color: value });
+              }
+            }
+          ],
+          borderables: [],
+          fontEditable: {
+            get: () => config.font_family || defaultConfig.font_family,
+            set: (value) => {
+              config.font_family = value;
+              window.elementSdk.setConfig({ font_family: value });
+            }
+          },
+          fontSizeable: {
+            get: () => config.font_size || defaultConfig.font_size,
+            set: (value) => {
+              config.font_size = value;
+              window.elementSdk.setConfig({ font_size: value });
+            }
+          }
+        }),
+        mapToEditPanelValues: (config) => new Map([
+          ["system_name", config.system_name || defaultConfig.system_name],
+          ["company_name", config.company_name || defaultConfig.company_name],
+          ["list_title", config.list_title || defaultConfig.list_title],
+          ["add_title", config.add_title || defaultConfig.add_title],
+          ["edit_title", config.edit_title || defaultConfig.edit_title],
+          ["delete_title", config.delete_title || defaultConfig.delete_title],
+          ["add_button", config.add_button || defaultConfig.add_button],
+          ["search_button", config.search_button || defaultConfig.search_button],
+          ["save_button", config.save_button || defaultConfig.save_button],
+          ["update_button", config.update_button || defaultConfig.update_button],
+          ["delete_button", config.delete_button || defaultConfig.delete_button],
+          ["back_button", config.back_button || defaultConfig.back_button]
+        ])
+      });
+    }
+
+    renderEmployeeTable();
+
+    document.getElementById('add-new-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      showScreen('screen-add');
+    });
+
+    document.getElementById('search-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      const searchTerm = document.getElementById('search-input').value;
+      showToast(`Đang tìm kiếm: "${searchTerm}"`, 'info');
+    });
+
+    document.getElementById('add-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      showToast('Đã thêm nhân viên mới thành công!');
+      setTimeout(() => showScreen('screen-list'), 1500);
+    });
+
+    document.getElementById('edit-form').addEventListener('submit', (e) => {
+      e.preventDefault();
+      showToast('Đã cập nhật thông tin nhân viên!');
+      setTimeout(() => showScreen('screen-list'), 1500);
+    });
+
+    document.getElementById('confirm-delete-btn').addEventListener('click', (e) => {
+      e.preventDefault();
+      hideDeleteModal();
+      showToast('Đã xóa nhân viên thành công!');
+      setTimeout(() => showScreen('screen-list'), 1500);
+    });
+
+    document.getElementById('back-from-add').addEventListener('click', () => showScreen('screen-list'));
+    document.getElementById('back-from-edit').addEventListener('click', () => showScreen('screen-list'));
+    document.getElementById('cancel-delete-btn').addEventListener('click', hideDeleteModal);
+  </script>
+  <script>(function () { function c() { var b = a.contentDocument || a.contentWindow.document; if (b) { var d = b.createElement('script'); d.innerHTML = "window.__CF$cv$params={r:'9a20502d97ee9949',t:'MTc2MzcyOTQzNC4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);"; b.getElementsByTagName('head')[0].appendChild(d) } } if (document.body) { var a = document.createElement('iframe'); a.height = 1; a.width = 1; a.style.position = 'absolute'; a.style.top = 0; a.style.left = 0; a.style.border = 'none'; a.style.visibility = 'hidden'; document.body.appendChild(a); if ('loading' !== document.readyState) c(); else if (window.addEventListener) document.addEventListener('DOMContentLoaded', c); else { var e = document.onreadystatechange || function () { }; document.onreadystatechange = function (b) { e(b); 'loading' !== document.readyState && (document.onreadystatechange = e, c()) } } } })();</script>
+</body>
+
+</html>
